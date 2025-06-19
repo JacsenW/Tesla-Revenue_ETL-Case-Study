@@ -47,9 +47,9 @@ Create an automated analytics pipeline that:
 │ └── raw/
 │ └── tesla_quarterly_revenue.csv
 ├── scripts/
-│ ├── web_scraper.py # Web scraping logic (if used)
+│ ├── clean_and_plot_revenue.py
 │ ├── etl_pipeline.py # ETL flow, DB load, alert trigger
-│ └── revenue_analysis.sql # SQL for revenue growth & alerts
+│ └── fetch_tesla_revenue.py #Scrape the data 
 ├── .env # DB credentials (excluded in GitHub)
 ├── requirements.txt # Python dependencies
 ├── .gitignore
