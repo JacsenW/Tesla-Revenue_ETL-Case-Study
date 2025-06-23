@@ -166,18 +166,6 @@ Send email/SMS alerts on drop detection using APIs
 
 Add unit tests and CI/CD deployment to improve production-readiness
 
-🧑‍💼 About the Analyst
-Hi, I’m Jacsen White — a data analyst focused on using SQL, Python, and storytelling to deliver real insights from complex data.
-
-This project reflects how I think about business problems:
-
-🤖 Automate where possible
-
-🧠 Focus on why, not just what
-
-📣 Communicate insights to people, not just machines
-
-
 ---
 
 ### ✅ What to Do Next
