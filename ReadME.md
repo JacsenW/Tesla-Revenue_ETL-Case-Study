@@ -1,93 +1,88 @@
-# 🚗 Tesla Revenue Analysis: Detecting Quarterly Declines with ETL + SQL Automation
+🚗 Tesla Revenue Analysis
+Detecting Quarterly Declines with ETL + SQL Automation
 
-## 📈 Case Study: Monitoring Tesla's Financial Performance with Data Engineering & SQL Analysis
+Automated financial alert system for Tesla’s quarterly revenue using Python, PostgreSQL, and SQL.
 
- I designed this project to uncover and report **significant revenue drops** in Tesla’s quarterly financial data. By building a full **ETL pipeline** with **Python**, storing and analyzing the data in **PostgreSQL**, and creating a custom **SQL alerting system**, this case study replicates the type of real-time financial monitoring used by modern businesses and investors.
+📈 Case Study Overview
+I designed this project to uncover and report significant revenue drops in Tesla’s financials using an automated ETL + SQL pipeline. The system:
 
----
+Scrapes and cleans Tesla’s revenue data
 
-## 🎯 Business Problem
+Stores it in PostgreSQL
 
-Tesla’s revenue figures are a major catalyst for market movements, investor confidence, and strategic decisions. But in a fast-paced world, how can businesses and analysts:
+Detects >15% revenue drops via SQL logic
 
-- Monitor revenue performance across quarters?
-- Detect steep drops that may require executive attention?
-- Automate financial insights to be delivered proactively?
+Logs alerts into a business-ready table for analysis
 
----
+This simulates real-time financial monitoring used by businesses and investors.
 
-## 💼 Objective
+🎯 Business Problem
+Tesla’s quarterly revenue reports significantly influence investor sentiment, media coverage, and strategic decisions.
 
-Create an automated analytics pipeline that:
-- 📥 Collects Tesla’s public quarterly revenue data
-- 🧼 Cleans, formats, and stores the data in a database
-- 📊 Calculates quarter-over-quarter growth rates
-- 🚨 Logs large revenue drops (≥15%) into an alert system using SQL
-- 🧠 Surfaces business insights for timely decision-making
+This project addresses:
 
----
+📉 How to detect sharp revenue drops programmatically
 
-## 🧱 Tools and Technologies
+🧠 How to automate business insights
 
-| Tool         | Purpose                                 |
-|--------------|------------------------------------------|
-| Python       | Scripting, ETL process                  |
-| Pandas       | Data cleaning & transformation          |
-| SQLAlchemy   | Database connection layer               |
-| psycopg2     | PostgreSQL adapter                      |
-| PostgreSQL   | Data warehouse                          |
-| SQL          | Revenue growth logic, alert logging     |
-| dotenv       | Secure environment variable access      |
+🧾 How to store and monitor quarterly financial data with integrity
 
----
+💼 Objective
+✅ Build a full-stack data pipeline that:
 
-## 📦 Folder Structure
+Scrapes Tesla’s quarterly revenue data
 
+Cleans & formats the data using Python (Pandas)
+
+Loads data into a PostgreSQL database
+
+Calculates quarter-over-quarter growth
+
+Logs ≥15% revenue declines into a custom alert table
+
+🧰 Tech Stack
+Tool	Purpose
+Python	Scripting, automation
+Pandas	Data cleaning & transformation
+SQLAlchemy	PostgreSQL connection layer
+psycopg2	PostgreSQL database adapter
+PostgreSQL	Data warehousing & analysis
+SQL	Revenue growth logic & alerting
+dotenv	Secure environment variable storage
+
+📂 Folder Structure
+tesla-revenue-analysis/
+│
 ├── data/
-│ └── raw/
-│ └── tesla_quarterly_revenue.csv
+│   └── raw/
+│       └── tesla_quarterly_revenue.csv
+│
 ├── scripts/
-│ ├── clean_and_plot_revenue.py
-│ ├── etl_pipeline.py # ETL flow, DB load, alert trigger
-│ └── fetch_tesla_revenue.py #Scrape the data 
-├── .env # DB credentials (excluded in GitHub)
-├── requirements.txt # Python dependencies
-├── .gitignore
-├── README.md # This file
+│   ├── fetch_tesla_revenue.py       # Scrapes Tesla revenue
+│   ├── clean_and_plot_revenue.py    # Cleans data and plots revenue
+│   └── etl_pipeline.py              # ETL + DB load + Alert logic
+│
+├── .env                             # DB credentials (excluded from GitHub)
+├── requirements.txt                 # Python dependencies
+├── .gitignore                       # Ignored files and folders
+└── README.md                        # This file
 
+🚀 Workflow Breakdown
+1️⃣ Data Acquisition (Web Scraping)
+Tesla’s revenue data is collected via pandas.read_html() or manual export
 
----
+Stored as CSV for reproducibility
 
-## 🚀 Step-by-Step Workflow
-
-### 1️⃣ Data Acquisition & Web Scraping
-
-The pipeline starts by gathering Tesla's quarterly revenue data from public sources using `pandas.read_html()` and/or manual exports. The result is saved to CSV for reproducibility and loading into the pipeline.
-
-### 2️⃣ Data Cleaning with Python
-
-The raw dataset included:
-- Empty or missing revenue values
-- Revenue figures with commas
-- Inconsistent date formats
-
-Using **Pandas**, I performed:
-- Date parsing on the `Quarter` column → converted to `datetime`
-- Numeric conversion of `Revenue` → removed commas, cast to `float`
-- Renaming → `Quarter` → `qtr`, `Revenue` → `rev`
-
-
+2️⃣ Data Cleaning (Pandas)
 df['Quarter'] = pd.to_datetime(df['Quarter'])
-df['Revenue'] = pd.to_numeric(df['Revenue'], errors='coerce')
+df['Revenue'] = pd.to_numeric(df['Revenue'].str.replace(',', ''), errors='coerce')
 df.rename(columns={'Quarter': 'qtr', 'Revenue': 'rev'}, inplace=True)
-3️⃣ Database Load with SQLAlchemy
-Using SQLAlchemy, I connected to a local PostgreSQL database and pushed the cleaned data into a table called quarterly_revenue. This created a structured, queryable source of truth.
 
+3️⃣ Database Load (PostgreSQL via SQLAlchemy)
 engine = create_engine(f'postgresql://{user}:{pwd}@localhost:5432/{db}')
 df.to_sql('quarterly_revenue', engine, if_exists='replace', index=False)
-4️⃣ Custom SQL Logic to Detect Revenue Drops
-Once loaded, I used SQL window functions to calculate quarter-over-quarter revenue growth. Here's the heart of the SQL logic:
 
+4️⃣ SQL Function: Calculate Revenue Growth
 CREATE OR REPLACE FUNCTION get_quarterly_growth()
 RETURNS TABLE (
     qtr DATE,
@@ -105,23 +100,13 @@ BEGIN
     FROM quarterly_revenue;
 END;
 $$ LANGUAGE plpgsql;
-This function calculates:
 
-The revenue from the previous quarter
-
-The percentage change in revenue
-
-Flags quarters where revenue declined sharply
-
-5️⃣ SQL-Powered Alert Table for Business Monitoring
-I created a table revenue_drop_alerts to log drops over 15%, preventing duplicate entries for the same quarter:
-
+5️⃣ SQL Alert Table: Detect Large Drops
 CREATE TABLE IF NOT EXISTS revenue_drop_alerts (
     quarter DATE PRIMARY KEY,
     revenue NUMERIC,
     revenue_growth_percent NUMERIC
 );
-Then, the following SQL block logs qualifying drops:
 
 INSERT INTO revenue_drop_alerts (quarter, revenue, revenue_growth_percent)
 SELECT
@@ -131,53 +116,33 @@ SELECT
 FROM get_quarterly_growth()
 WHERE revenue_growth_percent < -15
   AND qtr NOT IN (SELECT quarter FROM revenue_drop_alerts);
-📊 Business Impact & Key Insight
-In Q1 2025, Tesla experienced a 24.79% revenue decline, dropping from $25.7B to $19.3B. This was the largest drop in the dataset and triggered an alert in our PostgreSQL system.
 
-This insight could signal:
+📊 Business Insight
+In Q1 2025, Tesla's revenue dropped by 24.79%, falling from $25.7B → $19.3B.
 
-Seasonal weakness (similar dip in Q1 2024)
+This alert could signal:
 
-External market headwinds
+⚠️ Seasonal demand shifts
 
-EV demand shifts or production bottlenecks
+📉 EV market headwinds
 
-By surfacing this programmatically, stakeholders can act fast — whether that’s investors reassessing positions or analysts digging into product line-level metrics.
+⚙️ Supply chain or production issues
 
-🔬 Technical Highlights
-✅ Built a full ETL pipeline using Python and PostgreSQL
+By surfacing this drop automatically, stakeholders can take action faster.
 
-✅ Automated financial KPI monitoring with SQL functions
+🔍 Key Achievements
+✅ Designed a full ETL + monitoring pipeline
+✅ Leveraged SQL window functions for growth analysis
+✅ Logged business-critical KPIs automatically
+✅ Secured credentials with .env
+✅ Demonstrated scalable and reusable code design
 
-✅ Demonstrated data warehousing principles by staging and modeling data
+🔮 Future Improvements
+📈 Integrate Tesla’s stock price for correlation analysis
 
-✅ Practiced window functions and logic gates in PostgreSQL
+📊 Build dashboards in Tableau or Power BI
 
-✅ Secured credentials using .env variables
+📬 Send email or SMS alerts for real-time notifications
 
-✅ Created modular, reusable code for enterprise-scale insights
+✅ Add unit tests and CI/CD for production-grade deployment
 
-📈 Future Enhancements
-Add Tesla stock price time series to study correlation with revenue changes
-
-Generate real-time dashboards in Tableau or Power BI
-
-Send email/SMS alerts on drop detection using APIs
-
-Add unit tests and CI/CD deployment to improve production-readiness
-
----
-
-### ✅ What to Do Next
-
-Here’s how to get this project live on GitHub:
-
-1. Save that case study as `README.md` in your project folder.
-2. Create a `.gitignore` file and exclude:
-.env
-pycache/
-*.pyc
-venv/
-
-3. Push the full project folder to a new GitHub repo (name it something like `tesla-revenue-analysis`).
-4. In your GitHub project settings, add a banner and fill in the “About” section using:
