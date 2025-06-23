@@ -55,9 +55,6 @@ Create an automated analytics pipeline that:
 ├── .gitignore
 ├── README.md # This file
 
-pgsql
-Copy
-Edit
 
 ---
 
@@ -79,24 +76,18 @@ Using **Pandas**, I performed:
 - Numeric conversion of `Revenue` → removed commas, cast to `float`
 - Renaming → `Quarter` → `qtr`, `Revenue` → `rev`
 
-```python
+
 df['Quarter'] = pd.to_datetime(df['Quarter'])
 df['Revenue'] = pd.to_numeric(df['Revenue'], errors='coerce')
 df.rename(columns={'Quarter': 'qtr', 'Revenue': 'rev'}, inplace=True)
 3️⃣ Database Load with SQLAlchemy
 Using SQLAlchemy, I connected to a local PostgreSQL database and pushed the cleaned data into a table called quarterly_revenue. This created a structured, queryable source of truth.
 
-python
-Copy
-Edit
 engine = create_engine(f'postgresql://{user}:{pwd}@localhost:5432/{db}')
 df.to_sql('quarterly_revenue', engine, if_exists='replace', index=False)
 4️⃣ Custom SQL Logic to Detect Revenue Drops
 Once loaded, I used SQL window functions to calculate quarter-over-quarter revenue growth. Here's the heart of the SQL logic:
 
-sql
-Copy
-Edit
 CREATE OR REPLACE FUNCTION get_quarterly_growth()
 RETURNS TABLE (
     qtr DATE,
@@ -125,9 +116,6 @@ Flags quarters where revenue declined sharply
 5️⃣ SQL-Powered Alert Table for Business Monitoring
 I created a table revenue_drop_alerts to log drops over 15%, preventing duplicate entries for the same quarter:
 
-sql
-Copy
-Edit
 CREATE TABLE IF NOT EXISTS revenue_drop_alerts (
     quarter DATE PRIMARY KEY,
     revenue NUMERIC,
@@ -135,9 +123,6 @@ CREATE TABLE IF NOT EXISTS revenue_drop_alerts (
 );
 Then, the following SQL block logs qualifying drops:
 
-sql
-Copy
-Edit
 INSERT INTO revenue_drop_alerts (quarter, revenue, revenue_growth_percent)
 SELECT
     qtr,
@@ -192,9 +177,6 @@ This project reflects how I think about business problems:
 
 📣 Communicate insights to people, not just machines
 
-yaml
-Copy
-Edit
 
 ---
 
@@ -209,8 +191,5 @@ pycache/
 *.pyc
 venv/
 
-sql
-Copy
-Edit
 3. Push the full project folder to a new GitHub repo (name it something like `tesla-revenue-analysis`).
 4. In your GitHub project settings, add a banner and fill in the “About” section using:
